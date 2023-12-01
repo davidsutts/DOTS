@@ -4,7 +4,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
 )
 
 var tmpl *template.Template // Used for executing html templates.
@@ -13,6 +12,9 @@ var tmpl *template.Template // Used for executing html templates.
 func main() {
 
 	mux := http.NewServeMux()
+
+	// Create file servers to handle file requests for js and html.
+	mux.Handle("/js", http.StripPrefix("/js", http.FileServer(http.Dir("s/script/js"))))
 
 	// Define all the valid routes, and their respective handlers.
 	mux.HandleFunc("/api/write", writeHandler)
@@ -27,7 +29,7 @@ func main() {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
 
-	parseAndExecute(w, "t/index.html", nil)
+	parseAndExecute(w, "index.html", nil)
 
 }
 
@@ -46,19 +48,15 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 // parseAndExecute parses the given file, and executes the template with the given data.
 //
 // Handles failures and writes header errors.
-func parseAndExecute(w http.ResponseWriter, filepath string, data ...interface{}) {
+func parseAndExecute(w http.ResponseWriter, filename string, data ...interface{}) {
 	// Parse the given file.
 	var err error
-	tmpl, err = template.ParseFiles(filepath)
+	tmpl, err = template.ParseFiles("s/html/" + filename)
 	if err != nil {
-		log.Printf("couldn't parse %s: %v", filepath, err)
+		log.Printf("couldn't parse /s/html/%s: %v", filename, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	// Get the name of the file.
-	s := strings.Split(filepath, "/")
-	filename := s[len(s)-1]
 
 	// Execute the template.
 	err = tmpl.ExecuteTemplate(w, filename, data)

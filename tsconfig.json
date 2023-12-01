@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "outDir": "./s/script/js",
+    "rootDir": "./s/script/ts",
+    "module": "es2022",
+    "target": "es2022"
+  },
+  "include": ["./s/script/ts/**/*.ts"]
+}
