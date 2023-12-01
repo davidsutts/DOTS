@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 )
 
 var tmpl *template.Template // Used for executing html templates.
@@ -14,10 +15,10 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Create file servers to handle file requests for js and html.
-	mux.Handle("/js", http.StripPrefix("/js", http.FileServer(http.Dir("s/script/js"))))
+	mux.Handle("/js/", http.StripPrefix("/js", http.FileServer(http.Dir("s/script/js"))))
 
 	// Define all the valid routes, and their respective handlers.
-	mux.HandleFunc("/api/write", writeHandler)
+	mux.HandleFunc("/api/write/", writeHandler)
 	mux.HandleFunc("/", indexHandler)
 
 	// Serve all incoming requests.
@@ -42,7 +43,17 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write([]byte("this is the write route"))
+	// Check for a valid url request /api/write/<data>
+	log.Println(r.URL.String())
+	url := strings.Split(strings.TrimPrefix(r.URL.String(), "/"), "/")
+	if len(url) != 3 {
+		log.Println(url[0])
+		http.Redirect(w, r, "/", http.StatusBadRequest)
+		return
+	}
+
+	// Print received data.
+	log.Println(url[2])
 }
 
 // parseAndExecute parses the given file, and executes the template with the given data.
