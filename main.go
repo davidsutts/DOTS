@@ -39,6 +39,7 @@ func main() {
 
 	// Define all the valid routes, and their respective handlers.
 	mux.HandleFunc("/api/write/", writeHandler)
+	mux.HandleFunc("/api/read/", readHandler)
 	mux.HandleFunc("/", indexHandler)
 
 	// Serve all incoming requests.

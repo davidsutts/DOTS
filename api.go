@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
@@ -56,4 +57,36 @@ func writeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	result.Count++
 	db.Save(&result)
+}
+
+// readHandler handles requests to read data from the database.
+func readHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL)
+
+	if r.Method != "POST" {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	// Check that the request is formed correctly /api/read/<prompt-key>
+	url := strings.Split(strings.TrimPrefix(r.URL.String(), "/"), "/")
+	if len(url) != 3 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Get the data from the prompt
+	var results []Result
+	tx := db.Find(&results, "prompt = ?", url[2])
+	if tx.Error != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Write the data as json data to the response.
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(results)
+
+	log.Println(results)
+
 }
