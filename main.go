@@ -1,16 +1,37 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"strings"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var tmpl *template.Template // Used for executing html templates.
+var db *gorm.DB
 
 // main is the main execution flow.
 func main() {
+
+	// Get env vars for database setup.
+	HOST := os.Getenv("DOTS_HOST")
+	USER := os.Getenv("DOTS_USER")
+	PWORD := os.Getenv("DOTS_PWORD")
+	NAME := os.Getenv("DOTS_NAME")
+	PORT := os.Getenv("DOTS_PORT")
+
+	// Connect to the database.
+	var err error
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Australia/Adelaide", HOST, USER, PWORD, NAME, PORT)
+	db, err = gorm.Open(postgres.Open(dsn))
+	if err != nil {
+		log.Fatalf("could not connect to db: %v", err)
+	}
 
 	mux := http.NewServeMux()
 
