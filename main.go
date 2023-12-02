@@ -12,24 +12,24 @@ import (
 )
 
 var tmpl *template.Template // Used for executing html templates.
-var db *gorm.DB
+
+var (
+	db    *gorm.DB
+	HOST  = os.Getenv("DOTS_HOST")
+	USER  = os.Getenv("DOTS_USER")
+	PWORD = os.Getenv("DOTS_PWORD")
+	NAME  = os.Getenv("DOTS_NAME")
+	PORT  = os.Getenv("DOTS_PORT")
+)
 
 // main is the main execution flow.
 func main() {
 
-	// Get env vars for database setup.
-	HOST := os.Getenv("DOTS_HOST")
-	USER := os.Getenv("DOTS_USER")
-	PWORD := os.Getenv("DOTS_PWORD")
-	NAME := os.Getenv("DOTS_NAME")
-	PORT := os.Getenv("DOTS_PORT")
-
-	// Connect to the database.
+	// Connect to database.
 	var err error
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Australia/Adelaide", HOST, USER, PWORD, NAME, PORT)
-	db, err = gorm.Open(postgres.Open(dsn))
+	db, err = dbConnect()
 	if err != nil {
-		log.Fatalf("could not connect to db: %v", err)
+		log.Fatalln(err)
 	}
 
 	mux := http.NewServeMux()
@@ -75,4 +75,19 @@ func parseAndExecute(w http.ResponseWriter, filename string, data ...interface{}
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+// dbConnect initialises a connection with the database and returns a reference to a gorm.DB.
+func dbConnect() (*gorm.DB, error) {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Australia/Sydney", HOST, USER, PWORD, NAME, PORT)
+	for i := 0; i < 5; i++ {
+		gormDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			log.Printf("connected to database: %s", NAME)
+			return gormDB, err
+		}
+		log.Printf("failed to connect to %s: attempt %d", NAME, i+1)
+	}
+	return new(gorm.DB), fmt.Errorf("exceeded max retries and couldn't connect to database")
+
 }
