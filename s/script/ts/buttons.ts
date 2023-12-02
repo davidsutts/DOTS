@@ -9,6 +9,6 @@ function init() {
 
 function sendButtonData(data: string) {
 	let xhr = new XMLHttpRequest;
-	xhr.open("POST", "/api/write/" + data);
+	xhr.open("POST", "/api/write/1/" + data);
 	xhr.send();
 }

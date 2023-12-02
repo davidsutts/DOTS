@@ -9,6 +9,9 @@
 *.dylib
 *.js
 
+# Air tmp folder
+tmp
+
 # Test binary, built with `go test -c`
 *.test
 

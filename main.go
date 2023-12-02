@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -53,28 +52,6 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 	parseAndExecute(w, "index.html", nil)
 
-}
-
-// writeHandler handles requests made to the api/write route, used for writing data to the datastore.
-func writeHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.URL)
-
-	if r.Method != "POST" {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-	// Check for a valid url request /api/write/<data>
-	log.Println(r.URL.String())
-	url := strings.Split(strings.TrimPrefix(r.URL.String(), "/"), "/")
-	if len(url) != 3 {
-		log.Println(url[0])
-		http.Redirect(w, r, "/", http.StatusBadRequest)
-		return
-	}
-
-	// Print received data.
-	log.Println(url[2])
 }
 
 // parseAndExecute parses the given file, and executes the template with the given data.
